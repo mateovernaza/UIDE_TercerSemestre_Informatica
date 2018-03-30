@@ -19,48 +19,54 @@ import javax.swing.Timer;
 
 public class FrmAcelerometro extends javax.swing.JFrame {
 
+//    Se inicializan las variables necesarias
     private CommPortIdentifier idPort;
     private SerialPort puertoSerial;
     public OutputStream salida;
     public InputStream entrada;
     private String nombre;
-    public int dato, nBytes;
-    int x = 0;
-    int aux = 0;
-    int contador, contador2, verificar;
-    String xx = "";
+    public int dato , nBytes;
+    int posicion , contador , verificar;
+    String codigo = "";
     String valor_x = "";
     String valor_y = "";
     String valor_z = "";
     byte[] bufferLectura = new byte[21];
     
-    Timer temporizador = new Timer(100,new ActionListener()
+    Timer temporizador = new Timer(100 , new ActionListener()
     {
         public void actionPerformed(ActionEvent e)
         {
+            
+//            Recibe el codigo que viene de arduino
             try 
             {
-                while( entrada.available() > 0 )
+                while(entrada.available() > 0)
                 {
                     nBytes = entrada.read( bufferLectura );
                 }
-                xx= new String(bufferLectura).trim();
+                codigo = new String(bufferLectura).trim();
             } 
             catch( IOException i ) {}
-            System.out.println(xx);
-            for (contador = 0 ; contador < xx.length() ; contador += 1)
+            System.out.println(codigo);
+            
+//            Se analiza cada caracter del codigo
+            for (posicion = 0 ; posicion < codigo.length() ; posicion += 1)
             {
-                System.out.println(xx.charAt(contador));
-                if(xx.charAt(contador) == 'x')
+                System.out.println(codigo.charAt(posicion));
+                
+//                Se verifica si hay una letra x seguida de un grupo de caracteres que sean menos de 6, que terminen en una "y" y que no se pase de la
+//                longitud del codigo, si cumple las condiciones se imprime en el text field txtx el valor entre estas letras
+                if(codigo.charAt(posicion) == 'x')
                 {
-                    contador2 = contador;
+                    contador = posicion;
                     verificar = 0;
-                    while(contador2 < contador+6 && contador2 < xx.length()-1 && verificar == 0)
+                    while(contador < posicion + 6 && contador < codigo.length() - 1 && verificar == 0)
                     {
-                        contador2 += 1;
-                        if(xx.charAt(contador2) == 'y')
+                        contador += 1;
+                        if(codigo.charAt(contador) == 'y')
                         {
-                            valor_x = xx.substring(contador+1 , contador2);
+                            valor_x = codigo.substring(posicion + 1 , contador);
                             verificar = 1;
                         }
                     }
@@ -70,16 +76,19 @@ public class FrmAcelerometro extends javax.swing.JFrame {
                         System.out.println(valor_x);
                     }
                 }
-                if(xx.charAt(contador) == 'y')
+
+//                Se verifica si hay una letra y seguida de un grupo de caracteres que sean menos de 6, que terminen en una "z" y que no se pase de la
+//                longitud del codigo, si cumple las condiciones se imprime en el text field txty el valor entre estas letras
+                if(codigo.charAt(posicion) == 'y')
                 {
-                    contador2 = contador;
+                    contador = posicion;
                     verificar = 0;
-                    while(contador2 < contador+6 && contador2 < xx.length()-1 && verificar == 0)
+                    while(contador < posicion + 6 && contador < codigo.length() - 1 && verificar == 0)
                     {
-                        contador2 += 1;
-                        if(xx.charAt(contador2) == 'z')
+                        contador += 1;
+                        if(codigo.charAt(contador) == 'z')
                         {
-                            valor_y = xx.substring(contador+1 , contador2);
+                            valor_y = codigo.substring(posicion + 1 , contador);
                             verificar = 1;
                         }
                     }
@@ -89,18 +98,19 @@ public class FrmAcelerometro extends javax.swing.JFrame {
                         System.out.println(valor_y);
                     }
                 }
-                if(xx.charAt(contador) == 'z')
+                
+//                Se verifica si hay una letra z seguida de un grupo de caracteres que sean menos de 6, que terminen en una "t" y que no se pase de la
+//                longitud del codigo, si cumple las condiciones se imprime en el text field txtz el valor entre estas letras
+                if(codigo.charAt(posicion) == 'z')
                 {
-                    contador2 = contador;
+                    contador = posicion;
                     verificar = 0;
-                    while(contador2 < contador+6 && contador2 < xx.length()-1 && verificar == 0)
+                    while(contador < posicion + 6 && contador < codigo.length() - 1 && verificar == 0)
                     {
-                        contador2 += 1;
-                        System.out.print("Cotador2 ");
-                        System.out.println(contador2);
-                        if(xx.charAt(contador2) == 't')
+                        contador += 1;
+                        if(codigo.charAt(contador) == 't')
                         {
-                            valor_z = xx.substring(contador+1 , contador2);
+                            valor_z = codigo.substring(posicion + 1 , contador);
                             verificar = 1;
                         }
                     }
@@ -113,7 +123,8 @@ public class FrmAcelerometro extends javax.swing.JFrame {
             }
         }
     });
-    public FrmAcelerometro() {
+    public FrmAcelerometro()
+    {
         initComponents();
     }
 
@@ -205,20 +216,22 @@ public class FrmAcelerometro extends javax.swing.JFrame {
     }//GEN-LAST:event_txtxActionPerformed
 
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
+        
+//        Se abre la comunicacion entre java y arduino
         try
         {
             nombre = "COM6";//Este es el nombre del puerto del arduino debe ser cambiado seg?n corresponda
             idPort = CommPortIdentifier.getPortIdentifier(nombre);
-            puertoSerial = (SerialPort) idPort.open("Comunicacion Serial", 2000);
+            puertoSerial = (SerialPort) idPort.open("Comunicacion Serial" , 2000);
             entrada = puertoSerial.getInputStream();
             salida = puertoSerial.getOutputStream();
             System.out.println("Puerto " + nombre + " iniciado ...");
      
             try 
             {//los valores que se encuentran a continuaci?n son los par?metros de la comunicaci?n serial, deben ser los mismos en el arduino
-                puertoSerial.setSerialPortParams( 9600,
-                SerialPort.DATABITS_8,
-                SerialPort.STOPBITS_1,
+                puertoSerial.setSerialPortParams( 9600 ,
+                SerialPort.DATABITS_8 ,
+                SerialPort.STOPBITS_1 ,
                 SerialPort.PARITY_NONE );
             } catch( UnsupportedCommOperationException e ) {}
     
@@ -227,6 +240,8 @@ public class FrmAcelerometro extends javax.swing.JFrame {
         {
             System.out.println("Error en iniciarPuerto() \n" + e);
         }
+        
+//        Se inicia el temporizador
         temporizador.start();
     }//GEN-LAST:event_btnIniciarActionPerformed
 

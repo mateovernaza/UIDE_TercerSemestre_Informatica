@@ -9,12 +9,14 @@ package acelerometro;
  *
  * @author Mateo
  */
-public class Acelerometro {
+public class Acelerometro 
+{
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         FrmAcelerometro  frmAcelerometro = new FrmAcelerometro();
         frmAcelerometro.setVisible(true);
     }
